@@ -25,7 +25,7 @@ const fullscreenQuad              = new THREE.Mesh(
 fullscreenQuad.frustumCulled = false;
 fullscreenScene.add(fullscreenQuad);
 
-const shaderManager = createShaderManager({ camera, lightUniforms });
+const shaderManager = createShaderManager({ camera, renderer, lightUniforms });
 shaderManager.setMesh(sphere);
 shaderManager.setFullscreenQuad(fullscreenQuad);
 
@@ -70,20 +70,22 @@ window.addEventListener('resize', () => {
 });
 
 // ─── Render loop ────────────────────────────────────────────────────────────
-const clock = new THREE.Clock();
+const timer = new THREE.Timer();
+timer.connect(document);
 
-function animate() {
+function animate(timestamp) {
   requestAnimationFrame(animate);
 
-  const delta = clock.getDelta();
+  timer.update(timestamp);
+  const delta = timer.getDelta();
 
   if (activeMode === 'mesh') {
     sphere.rotation.y += 0.4 * delta;
     sphere.rotation.x += 0.12 * delta;
   }
 
-  shaderManager.update(delta);
   if (controls.enabled) controls.update();
+  shaderManager.update(delta);
 
   renderer.clear();
   if (activeMode === 'fullscreen') {
