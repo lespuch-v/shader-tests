@@ -7,8 +7,8 @@ import plasmaVert  from './shaders/plasma.vert';
 import plasmaFrag  from './shaders/plasma.frag';
 import fullscreenVert from './shaders/fullscreen.vert';
 import morphSdfFrag from './shaders/morph-sdf.frag';
-import weirdFxaaVert from './shaders/weird-fxaa.vert';
-import weirdFxaaFrag from './shaders/weird-fxaa.frag';
+import starTorsionFrag from './shaders/star-torsion.frag';
+import turbulenceCoreFrag from './shaders/turbulence-core.frag';
 
 export function createShaderManager({ camera, lightUniforms }) {
   const textureLoader = new THREE.TextureLoader();
@@ -98,29 +98,6 @@ export function createShaderManager({ camera, lightUniforms }) {
     },
 
     {
-      id: 'weird-fxaa',
-      name: 'Weird FXAA',
-      mode: 'mesh',
-      bloom: 0.55,
-      createMaterial() {
-        return new THREE.ShaderMaterial({
-          glslVersion: THREE.GLSL3,
-          vertexShader: weirdFxaaVert,
-          fragmentShader: weirdFxaaFrag,
-          uniforms: {
-            uTime: { value: 0.0 },
-            uCameraPos: { value: new THREE.Vector3() },
-            ...lightUniforms,
-          },
-        });
-      },
-      onFrame(uniforms, delta) {
-        uniforms.uTime.value += delta;
-        uniforms.uCameraPos.value.copy(camera.position);
-      },
-    },
-
-    {
       id: 'morph-sdf',
       name: 'Morph SDF',
       mode: 'fullscreen',
@@ -138,6 +115,50 @@ export function createShaderManager({ camera, lightUniforms }) {
       },
       onFrame(uniforms, delta) {
         uniforms.uTime.value += delta;
+        uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      },
+    },
+
+    {
+      id: 'star-torsion',
+      name: 'Star Torsion',
+      mode: 'fullscreen',
+      bloom: 0,
+      createMaterial() {
+        return new THREE.ShaderMaterial({
+          glslVersion: THREE.GLSL3,
+          vertexShader: fullscreenVert,
+          fragmentShader: starTorsionFrag,
+          uniforms: {
+            uTime: { value: performance.now() * 0.001 },
+            uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+          },
+        });
+      },
+      onFrame(uniforms) {
+        uniforms.uTime.value = performance.now() * 0.001;
+        uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      },
+    },
+
+    {
+      id: 'turbulence-core',
+      name: 'Turbulence Core',
+      mode: 'fullscreen',
+      bloom: 0,
+      createMaterial() {
+        return new THREE.ShaderMaterial({
+          glslVersion: THREE.GLSL3,
+          vertexShader: fullscreenVert,
+          fragmentShader: turbulenceCoreFrag,
+          uniforms: {
+            uTime: { value: performance.now() * 0.001 },
+            uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+          },
+        });
+      },
+      onFrame(uniforms) {
+        uniforms.uTime.value = performance.now() * 0.001;
         uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
       },
     },
